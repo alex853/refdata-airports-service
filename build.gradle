@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'net.simforge', name: 'refdata-airports', version: '1.0.0'
+    compile group: 'net.simforge', name: 'refdata-airports', version: '1.0.1'
 
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
