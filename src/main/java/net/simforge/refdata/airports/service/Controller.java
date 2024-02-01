@@ -23,7 +23,8 @@ public class Controller {
 
     @GetMapping("/v1/distance")
     @ResponseBody
-    public ResponseEntity<Object> getDistance(@RequestParam(value = "from", required = true) String from, @RequestParam(value = "to", required = true) String to) {
+    public ResponseEntity<Object> getDistance(@RequestParam String from,
+                                              @RequestParam String to) {
         String msg = "Distance from " + from + " to " + to + ": ";
 
         Airports airports = Airports.get();
@@ -42,5 +43,22 @@ public class Controller {
         String response = String.valueOf((int) distance);
         logger.info(msg + response + " nm");
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/v1/airport/info")
+    @ResponseBody
+    public ResponseEntity<AirportInfoDto> getAirportInfo(@RequestParam String icao) {
+        Airports airports = Airports.get();
+        Airport airport = airports.getByIcao(icao);
+        if (airport == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        final AirportInfoDto dto = new AirportInfoDto();
+        dto.setIcao(icao);
+        dto.setCity("City123");
+        dto.setCountry("Cyprus");
+        dto.setCountryCode("CY");
+        return ResponseEntity.ok(dto);
     }
 }
