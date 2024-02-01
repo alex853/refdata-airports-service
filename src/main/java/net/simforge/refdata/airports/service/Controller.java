@@ -48,17 +48,20 @@ public class Controller {
     @GetMapping("/v1/airport/info")
     @ResponseBody
     public ResponseEntity<AirportInfoDto> getAirportInfo(@RequestParam String icao) {
-        Airports airports = Airports.get();
-        Airport airport = airports.getByIcao(icao);
+        Airport airport = Airports.get().getByIcao(icao);
         if (airport == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
+        FSEconomyAirports.Airport notFound = new FSEconomyAirports.Airport("ZZZZ", "Unknown", "Unknown", "Unknown");
+
+        FSEconomyAirports.Airport fseAirport = FSEconomyAirports.get().findByIcao(icao).orElse(notFound);
+
         final AirportInfoDto dto = new AirportInfoDto();
         dto.setIcao(icao);
-        dto.setCity("City123");
-        dto.setCountry("Cyprus");
-        dto.setCountryCode("CY");
+        dto.setName(fseAirport.getName());
+        dto.setCity(fseAirport.getCity());
+        dto.setCountry(fseAirport.getCountry());
         return ResponseEntity.ok(dto);
     }
 }

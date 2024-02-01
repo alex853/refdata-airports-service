@@ -8,5 +8,4 @@ public class AirportInfoDto {
     private String name;
     private String city;
     private String country;
-    private String countryCode;
 }
