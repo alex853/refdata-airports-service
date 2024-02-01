@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'net.simforge:simforge-commons:latest.release'
     implementation 'net.simforge:refdata-airports:latest.release'
 
     implementation 'org.projectlombok:lombok'
