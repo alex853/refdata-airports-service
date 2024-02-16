@@ -62,6 +62,7 @@ public class Controller {
         dto.setName(fseAirport.getName());
         dto.setCity(fseAirport.getCity());
         dto.setCountry(fseAirport.getCountry());
+        dto.setCoords(airport.getCoords());
         return ResponseEntity.ok(dto);
     }
 }
