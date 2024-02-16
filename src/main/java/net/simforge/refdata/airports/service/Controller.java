@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/")
 @CrossOrigin
@@ -53,16 +56,35 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        FSEconomyAirports.Airport notFound = new FSEconomyAirports.Airport("ZZZZ", "Unknown", "Unknown", "Unknown");
+        return ResponseEntity.ok(buildAirportInfoDto(airport));
+    }
 
-        FSEconomyAirports.Airport fseAirport = FSEconomyAirports.get().findByIcao(icao).orElse(notFound);
+    @GetMapping("/v1/airport/vicinity")
+    @ResponseBody
+    public ResponseEntity<List<AirportInfoDto>> getAirportsInVicinity(@RequestParam double lat,
+                                                                      @RequestParam double lon,
+                                                                      @RequestParam double radius) {
+        return ResponseEntity.ok(Airports.get()
+                .findAllWithinRadius(Geo.coords(lat, lon), radius).stream()
+                .map(Controller::buildAirportInfoDto)
+                .collect(Collectors.toList()));
+    }
+
+    private static final FSEconomyAirports.Airport NOT_FOUND = new FSEconomyAirports.Airport(
+            "ZZZZ",
+            "Unknown",
+            "Unknown",
+            "Unknown");
+
+    private static AirportInfoDto buildAirportInfoDto(Airport airport) {
+        FSEconomyAirports.Airport fseAirport = FSEconomyAirports.get().findByIcao(airport.getIcao()).orElse(NOT_FOUND);
 
         final AirportInfoDto dto = new AirportInfoDto();
-        dto.setIcao(icao);
+        dto.setIcao(airport.getIcao());
         dto.setName(fseAirport.getName());
         dto.setCity(fseAirport.getCity());
         dto.setCountry(fseAirport.getCountry());
         dto.setCoords(airport.getCoords());
-        return ResponseEntity.ok(dto);
+        return dto;
     }
 }
