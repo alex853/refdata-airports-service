@@ -10,4 +10,5 @@ public class AirportInfoDto {
     private String city;
     private String country;
     private Geo.Coords coords;
+    private float defaultBoundaryRadius;
 }
