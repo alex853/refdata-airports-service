@@ -3,6 +3,8 @@ package net.simforge.refdata.airports.service;
 import net.simforge.commons.misc.Geo;
 import net.simforge.refdata.airports.Airport;
 import net.simforge.refdata.airports.Airports;
+import net.simforge.refdata.airports.fse.FSEAirport;
+import net.simforge.refdata.airports.fse.FSEAirports;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,13 +28,13 @@ public class Controller {
 
     @GetMapping("/v1/distance")
     @ResponseBody
-    public ResponseEntity<Object> getDistance(@RequestParam String from,
-                                              @RequestParam String to) {
-        String msg = "Distance from " + from + " to " + to + ": ";
+    public ResponseEntity<Object> getDistance(@RequestParam final String from,
+                                              @RequestParam final String to) {
+        final String msg = "Distance from " + from + " to " + to + ": ";
 
-        Airports airports = Airports.get();
-        Airport airportFrom = airports.getByIcao(from);
-        Airport airportTo = airports.getByIcao(to);
+        final Airports airports = Airports.get();
+        final Airport airportFrom = airports.getByIcao(from);
+        final Airport airportTo = airports.getByIcao(to);
 
         if (airportFrom == null) {
             logger.warn(msg + "could not find 'from' airport");
@@ -42,16 +44,16 @@ public class Controller {
             logger.warn(msg + "could not find 'to' airport");
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Airport '" + to + "' not found");
         }
-        double distance = Geo.distance(airportFrom.getCoords(), airportTo.getCoords());
-        String response = String.valueOf((int) distance);
+        final double distance = Geo.distance(airportFrom.getCoords(), airportTo.getCoords());
+        final String response = String.valueOf((int) distance);
         logger.info(msg + response + " nm");
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/v1/airport/info")
     @ResponseBody
-    public ResponseEntity<AirportInfoDto> getAirportInfo(@RequestParam String icao) {
-        Airport airport = Airports.get().getByIcao(icao);
+    public ResponseEntity<AirportInfoDto> getAirportInfo(@RequestParam final String icao) {
+        final Airport airport = Airports.get().getByIcao(icao);
         if (airport == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -61,23 +63,24 @@ public class Controller {
 
     @GetMapping("/v1/airport/vicinity")
     @ResponseBody
-    public ResponseEntity<List<AirportInfoDto>> getAirportsInVicinity(@RequestParam double lat,
-                                                                      @RequestParam double lon,
-                                                                      @RequestParam double radius) {
+    public ResponseEntity<List<AirportInfoDto>> getAirportsInVicinity(@RequestParam final double lat,
+                                                                      @RequestParam final double lon,
+                                                                      @RequestParam final double radius) {
         return ResponseEntity.ok(Airports.get()
                 .findAllWithinRadius(Geo.coords(lat, lon), radius).stream()
                 .map(Controller::buildAirportInfoDto)
                 .collect(Collectors.toList()));
     }
 
-    private static final FSEconomyAirports.Airport NOT_FOUND = new FSEconomyAirports.Airport(
-            "ZZZZ",
-            "Unknown",
-            "Unknown",
-            "Unknown");
+    private static final FSEAirport NOT_FOUND = FSEAirport.builder()
+            .withIcao("ZZZZ")
+            .withName("Unknown")
+            .withCity("Unknown")
+            .withCountry("Unknown")
+            .build();
 
     private static AirportInfoDto buildAirportInfoDto(Airport airport) {
-        FSEconomyAirports.Airport fseAirport = FSEconomyAirports.get().findByIcao(airport.getIcao()).orElse(NOT_FOUND);
+        final FSEAirport fseAirport = FSEAirports.get().findByIcao(airport.getIcao()).orElse(NOT_FOUND);
 
         final AirportInfoDto dto = new AirportInfoDto();
         dto.setIcao(airport.getIcao());
