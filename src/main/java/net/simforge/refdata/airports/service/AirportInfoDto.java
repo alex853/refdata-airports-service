@@ -11,4 +11,6 @@ public class AirportInfoDto {
     private String country;
     private Geo.Coords coords;
     private float defaultBoundaryRadius;
+    private String boundaryType;
+    private String boundaryData;
 }

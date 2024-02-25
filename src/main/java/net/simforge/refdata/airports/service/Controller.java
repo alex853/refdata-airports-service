@@ -89,6 +89,8 @@ public class Controller {
         dto.setCountry(fseAirport.getCountry());
         dto.setCoords(airport.getCoords());
         dto.setDefaultBoundaryRadius(airport.getDefaultBoundaryRadius());
+        dto.setBoundaryType(airport.getBoundaryType().name());
+        dto.setBoundaryData(airport.getBoundaryData());
         return dto;
     }
 }
