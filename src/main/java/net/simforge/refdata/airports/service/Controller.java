@@ -110,10 +110,14 @@ public class Controller {
         dto.setCity(fseAirport.getCity());
         dto.setCountry(fseAirport.getCountry());
         dto.setCoords(airport.getCoords());
-        dto.setDefaultBoundaryRadius(DefaultBoundary.calcDefaultBoundaryRadius(airport.getRunwaySize()));
+
+        final AirportBoundaryDto boundaryDto = new AirportBoundaryDto();
+        boundaryDto.setDefaultRadius(DefaultBoundary.calcDefaultBoundaryRadius(airport.getRunwaySize()));
         final Properties boundaryInfo = airport.getBoundary().asProperties();
-        dto.setBoundaryType(boundaryInfo.getProperty("type"));
-        dto.setBoundaryData(boundaryInfo.getProperty("data"));
+        boundaryDto.setType(boundaryInfo.getProperty("type"));
+        boundaryDto.setData(boundaryInfo.getProperty("data"));
+        dto.setBoundary(boundaryDto);
+
         return dto;
     }
 }
