@@ -9,6 +9,7 @@ import net.simforge.refdata.airports.fse.FSEAirport;
 import net.simforge.refdata.airports.fse.FSEAirports;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,15 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class Controller {
     private static final Logger logger = LoggerFactory.getLogger(Controller.class);
+
+    private static final int MAX_TRANSITION_ALTITUDE = 60000;
+
+    private final TransitionStorage transitionStorage;
+
+    @Autowired
+    public Controller(final TransitionStorage transitionStorage) {
+        this.transitionStorage = transitionStorage;
+    }
 
     @RequestMapping("/hello-world")
     public String getHelloWorld() {
@@ -72,6 +82,34 @@ public class Controller {
                 .findAllWithinRadius(Geo.coords(lat, lon), radius).stream()
                 .map(Controller::buildAirportInfoDto)
                 .collect(Collectors.toList()));
+    }
+
+    /**
+     * Not a pure GET: if ta and/or tl are specified, they are registered in the statistics.
+     * Returns the most frequent known values.
+     */
+    @GetMapping("/v1/airport/transition")
+    @ResponseBody
+    public ResponseEntity<TransitionDto> getAirportTransition(@RequestParam final String icao,
+                                                              @RequestParam(required = false) final Integer ta,
+                                                              @RequestParam(required = false) final Integer tl) {
+        final Airport airport = Airports.get().findByIcao(icao)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Airport '" + icao + "' not found"));
+        validateAltitude("ta", ta);
+        validateAltitude("tl", tl);
+
+        if (ta == null && tl == null) {
+            return ResponseEntity.ok(transitionStorage.get(airport.getIcao()));
+        }
+
+        logger.info("Transition for {}: ta = {}, tl = {}", airport.getIcao(), ta, tl);
+        return ResponseEntity.ok(transitionStorage.register(airport.getIcao(), ta, tl));
+    }
+
+    private static void validateAltitude(final String name, final Integer value) {
+        if (value != null && (value <= 0 || value > MAX_TRANSITION_ALTITUDE)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter '" + name + "' is out of range: " + value);
+        }
     }
 
     @PostMapping("/v1/airport/boundary")
