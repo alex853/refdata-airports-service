@@ -93,6 +93,8 @@ public class Controller {
     public ResponseEntity<TransitionDto> getAirportTransition(@RequestParam final String icao,
                                                               @RequestParam(required = false) final Integer ta,
                                                               @RequestParam(required = false) final Integer tl) {
+        logger.info("Transition request: icao = {}, ta = {}, tl = {}", icao, ta, tl);
+
         final Airport airport = Airports.get().findByIcao(icao)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Airport '" + icao + "' not found"));
         validateAltitude("ta", ta);
@@ -102,7 +104,6 @@ public class Controller {
             return ResponseEntity.ok(transitionStorage.get(airport.getIcao()));
         }
 
-        logger.info("Transition for {}: ta = {}, tl = {}", airport.getIcao(), ta, tl);
         return ResponseEntity.ok(transitionStorage.register(airport.getIcao(), ta, tl));
     }
 
